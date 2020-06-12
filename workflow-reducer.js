@@ -85,8 +85,13 @@ export default function workflowReducer(state = {}, action) {
 										}
 									}
 								}
+								inputFields[prefForms.PM_WORKFLOW_FORM[i].name] = result;
+							} else if (prefForms.PM_WORKFLOW_FORM[i].fieldType == "DATE") {
+								let d = new Date();
+								inputFields[prefForms.PM_WORKFLOW_FORM[i].name] = d.toISOString();
+							} else {
+								inputFields[prefForms.PM_WORKFLOW_FORM[i].name] = result;
 							}
-							inputFields[prefForms.PM_WORKFLOW_FORM[i].name] = result;
 						}
 					}
 				}
@@ -118,6 +123,22 @@ export default function workflowReducer(state = {}, action) {
 		}
 		case 'PM_WORKFLOW_ORDERBY': { 
 			return reducerUtils.updateOrderBy(state,action);
+		}
+		case 'PM_WORKFLOW_ADD_PARENT': {
+			if (action.parent != null) {
+				return Object.assign({}, state, {
+					parent: action.parent,
+					parentType: action.parentType
+				});
+			} else {
+		        return state;
+		    }
+		}
+		case 'PM_WORKFLOW_CLEAR_PARENT': {
+			return Object.assign({}, state, {
+				parent: null,
+				parentType: null
+			});
 		}
 		default:
 			return state;
