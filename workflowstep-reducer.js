@@ -68,6 +68,21 @@ export default function workflowReducer(state = {}, action) {
 					for (let i = 0; i < action.responseJson.params.items.length; i++) {
 						options.push({value:action.responseJson.params.items[i].id, label:action.responseJson.params.items[i].name});
 					}
+					for (let i = 0; i < action.responseJson.params.items.length; i++) {
+						let nextStep = action.responseJson.params.items[i].nextStep;
+						if (nextStep != null && nextStep != "") {
+							let newNextStep = [];
+							let step = JSON.parse(nextStep);
+							for (let j = 0; j < step.length; j++) {
+								for (let k = 0; k < options.length; k++) {
+									if (step[j] == options[k].value) {
+										newNextStep.push(options[k].label);
+									}
+								}
+							}
+							action.responseJson.params.items[i].nextStep = JSON.stringify(newNextStep);
+						}
+					}
 				}
 				return Object.assign({}, state, {
 					itemCount: reducerUtils.getItemCount(action),
@@ -90,8 +105,12 @@ export default function workflowReducer(state = {}, action) {
 				for (let i = 0; i < prefForms.PM_WORKFLOW_STEP_FORM.length; i++) {
 					if (prefForms.PM_WORKFLOW_STEP_FORM[i].group === "FORM1") {
 						let classModel = JSON.parse(prefForms.PM_WORKFLOW_STEP_FORM[i].classModel);
-						if (action.responseJson.params.item != null && action.responseJson.params.item[classModel.field]) {
-							inputFields[prefForms.PM_WORKFLOW_STEP_FORM[i].name] = action.responseJson.params.item[classModel.field];
+						if (action.responseJson.params.item != null && action.responseJson.params.item[classModel.field] != null) {
+							if (classModel.type != null && classModel.type == "JSONArray") {
+								inputFields[prefForms.PM_WORKFLOW_STEP_FORM[i].name] = JSON.parse(action.responseJson.params.item[classModel.field]);
+							} else {
+								inputFields[prefForms.PM_WORKFLOW_STEP_FORM[i].name] = action.responseJson.params.item[classModel.field];
+							}
 						} else {
 							let result = "";
 							if (prefForms.PM_WORKFLOW_STEP_FORM[i].value != null && prefForms.PM_WORKFLOW_STEP_FORM[i].value != ""){
@@ -114,12 +133,7 @@ export default function workflowReducer(state = {}, action) {
 											}
 										}
 									}
-								} else if (formValue.optionRef != null) {
-									if (action.responseJson.params.item != null && action.responseJson.params.item.nextStep != null) {
-										result = JSON.parse(action.responseJson.params.item.nextStep);
-									}
 								}
-								
 								inputFields[prefForms.PM_WORKFLOW_STEP_FORM[i].name] = result;
 							} else if (prefForms.PM_WORKFLOW_STEP_FORM[i].fieldType == "DATE") {
 								let d = new Date();
