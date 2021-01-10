@@ -51,11 +51,18 @@ export default function workflowReducer(state = {}, action) {
 					items: reducerUtils.getItems(action),
 					listLimit: reducerUtils.getListLimit(action),
 					listStart: reducerUtils.getListStart(action),
+					paginationSegment: 1,
 					nextOptions: options,
 					orderCriteria: [],
     				searchCriteria: [{'searchValue':'','searchColumn':'PM_WORKFLOW_STEP_TABLE_NAME'}],
 					selected: null,
-					isModifyOpen: false
+					isModifyOpen: false,
+					pageName:"PMPRODUCT",
+					isDeleteModalOpen: false,
+					errors:null, 
+					warns:null, 
+					successes:null,
+					searchValue:""
 				});
 			} else {
 				return state;
@@ -90,8 +97,13 @@ export default function workflowReducer(state = {}, action) {
 					nextOptions: options,
 					listLimit: reducerUtils.getListLimit(action),
 					listStart: reducerUtils.getListStart(action),
+					paginationSegment: action.paginationSegment,
 					selected: null,
-					isModifyOpen: false
+					isModifyOpen: false,
+					isDeleteModalOpen: false,
+					errors:null, 
+					warns:null, 
+					successes:null
 				});
 			} else {
 				return state;
@@ -224,6 +236,22 @@ export default function workflowReducer(state = {}, action) {
 		case 'PM_WORKFLOW_STEP_MOVE_CANCEL': {
 			return Object.assign({}, state, {
 				moveSelectedItem: null
+			});
+		}
+		case 'PM_WORKFLOW_STEP_SET_ERRORS': {
+			return Object.assign({}, state, {
+				errors: action.errors
+			});
+		}
+		case 'PM_WORKFLOW_STEP_CLOSE_DELETE_MODAL': {
+			return Object.assign({}, state, {
+				isDeleteModalOpen: false
+			});
+		}
+		case 'PM_WORKFLOW_STEP_OPEN_DELETE_MODAL': {
+			return Object.assign({}, state, {
+				isDeleteModalOpen: true,
+				selected: action.item
 			});
 		}
 		default:

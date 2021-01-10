@@ -22,14 +22,12 @@ import * as workflowStepActions from './workflowstep-actions';
 import fuLogger from '../../core/common/fu-logger';
 import WorkflowStepView from '../../memberView/pm_workflow/workflowstep-view';
 import WorkflowStepModifyView from '../../memberView/pm_workflow/workflowstep-modify-view';
-import utils from '../../core/common/utils';
-import moment from 'moment';
+import BaseContainer from '../../core/container/base-container';
 
 
-class PMWorkflowStepContainer extends Component {
+class PMWorkflowStepContainer extends BaseContainer {
 	constructor(props) {
 		super(props);
-		this.state = {pageName:"PM_WORKFLOW_STEP",isDeleteModalOpen: false, errors:null, warns:null, successes:null};
 	}
 
 	componentDidMount() {
@@ -40,126 +38,12 @@ class PMWorkflowStepContainer extends Component {
 		}
 	}
 
-	onListLimitChange = (fieldName, event) => {
-		let value = 20;
-		if (this.props.codeType === 'NATIVE') {
-			value = event.nativeEvent.text;
-		} else {
-			value = event.target.value;
-		}
-
-		let listLimit = parseInt(value);
-		this.props.actions.listLimit({state:this.props.pmworkflowstep,listLimit});
-	}
-
-	onPaginationClick = (value) => {
-		fuLogger.log({level:'TRACE',loc:'WorkflowStepContainer::onPaginationClick',msg:"fieldName "+ value});
-		let listStart = this.props.pmworkflowstep.listStart;
-		let segmentValue = 1;
-		let oldValue = 1;
-		if (this.state["PM_WORKFLOW_STEP_PAGINATION"] != null && this.state["PM_WORKFLOW_STEP_PAGINATION"] != ""){
-			oldValue = this.state["PM_WORKFLOW_STEP_PAGINATION"];
-		}
-		if (value === "prev") {
-			segmentValue = oldValue - 1;
-		} else if (value === "next") {
-			segmentValue = oldValue + 1;
-		} else {
-			segmentValue = value;
-		}
-		listStart = ((segmentValue - 1) * this.props.pmworkflowstep.listLimit);
-		this.setState({"PM_WORKFLOW_STEP_PAGINATION":segmentValue});
-		
-		this.props.actions.list({state:this.props.pmworkflowstep,listStart});
-	}
-
-	onSearchChange = (fieldName, event) => {
-		if (event.type === 'keypress') {
-			if (event.key === 'Enter') {
-				this.onSearchClick(fieldName,event);
-			}
-		} else {
-			if (this.props.codeType === 'NATIVE') {
-				this.setState({[fieldName]:event.nativeEvent.text});
-			} else {
-				this.setState({[fieldName]:event.target.value});
-			}
-		}
-	}
-
-	onSearchClick = (fieldName, event) => {
-		let searchCriteria = [];
-		if (fieldName === 'PM_WORKFLOW_STEP-SEARCHBY') {
-			if (event != null) {
-				for (let o = 0; o < event.length; o++) {
-					let option = {};
-					option.searchValue = this.state['PM_WORKFLOW_STEP-SEARCH'];
-					option.searchColumn = event[o].value;
-					searchCriteria.push(option);
-				}
-			}
-		} else {
-			for (let i = 0; i < this.props.pmworkflowstep.searchCriteria.length; i++) {
-				let option = {};
-				option.searchValue = this.state['PM_WORKFLOW_STEP-SEARCH'];
-				option.searchColumn = this.props.pmworkflowstep.searchCriteria[i].searchColumn;
-				searchCriteria.push(option);
-			}
-		}
-
-		this.props.actions.search({state:this.props.pmworkflowstep,searchCriteria});
-	}
-
-	onOrderBy = (selectedOption, event) => {
-		fuLogger.log({level:'TRACE',loc:'WorkflowStepContainer::onOrderBy',msg:"id " + selectedOption});
-		let orderCriteria = [];
-		if (event != null) {
-			for (let o = 0; o < event.length; o++) {
-				let option = {};
-				if (event[o].label.includes("ASC")) {
-					option.orderColumn = event[o].value;
-					option.orderDir = "ASC";
-				} else if (event[o].label.includes("DESC")){
-					option.orderColumn = event[o].value;
-					option.orderDir = "DESC";
-				} else {
-					option.orderColumn = event[o].value;
-				}
-				orderCriteria.push(option);
-			}
-		} else {
-			let option = {orderColumn:"PM_WORKFLOW_STEP_TABLE_NAME",orderDir:"ASC"};
-			orderCriteria.push(option);
-		}
-		this.props.actions.orderBy({state:this.props.pmworkflowstep,orderCriteria});
+	getState = () => {
+		return this.props.pmworkflowstep;
 	}
 	
-	onSave = () => {
-		fuLogger.log({level:'TRACE',loc:'WorkflowStepContainer::onSave',msg:"test"});
-		let errors = utils.validateFormFields(this.props.pmworkflowstep.prefForms.PM_WORKFLOW_STEP_FORM,this.props.pmworkflowstep.inputFields);
-		
-		if (errors.isValid){
-			this.props.actions.saveItem({state:this.props.pmworkflowstep});
-		} else {
-			this.setState({errors:errors.errorMap});
-		}
-	}
-	
-	onModify = (item) => {
-		let id = null;
-		if (item != null && item.id != null) {
-			id = item.id;
-		}
-		fuLogger.log({level:'TRACE',loc:'WorkflowStepContainer::onModify',msg:"test"+id});
-		this.props.actions.modifyItem({id,appPrefs:this.props.appPrefs});
-	}
-	
-	onDelete = (item) => {
-		fuLogger.log({level:'TRACE',loc:'WorkflowStepContainer::onDelete',msg:"test"});
-		this.setState({isDeleteModalOpen:false});
-		if (item != null && item.id != "") {
-			this.props.actions.deleteItem({state:this.props.pmworkflowstep,id:item.id});
-		}
+	getForm = () => {
+		return "PM_WORKFLOW_STEP_FORM";
 	}
 	
 	onMoveSelect = (item) => {
@@ -176,10 +60,6 @@ class PMWorkflowStepContainer extends Component {
 		}
 	}
 	
-	openDeleteModal = (item) => {
-		this.setState({isDeleteModalOpen:true,selected:item});
-	}
-	
 	onMoveCancel = () => {
 		fuLogger.log({level:'TRACE',loc:'WorkflowStepContainer::onMoveCancel',msg:"test"});
 		this.props.actions.moveCancel({state:this.props.pmworkflowstep});
@@ -187,19 +67,11 @@ class PMWorkflowStepContainer extends Component {
 	
 	onOption = (code, item) => {
 		fuLogger.log({level:'TRACE',loc:'WorkflowStepContainer::onOption',msg:" code "+code});
+		if (this.onOptionBase(code,item)) {
+			return;
+		}
+		
 		switch(code) {
-			case 'MODIFY': {
-				this.onModify(item);
-				break;
-			}
-			case 'DELETE': {
-				this.openDeleteModal(item);
-				break;
-			}
-			case 'DELETEFINAL': {
-				this.onDelete(item);
-				break;
-			}
 			case 'MOVESELECT': {
 				this.onMoveSelect(item);
 				break;
@@ -217,19 +89,6 @@ class PMWorkflowStepContainer extends Component {
 				break;
 			}
 		}
-	}
-	
-	closeModal = () => {
-		this.setState({isDeleteModalOpen:false,errors:null,warns:null});
-	}
-	
-	onCancel = () => {
-		fuLogger.log({level:'TRACE',loc:'WorkflowStepContainer::onCancel',msg:"test"});
-		this.props.actions.list({state:this.props.pmworkflowstep});
-	}
-	
-	inputChange = (type,field,value,event) => {
-		utils.inputChange({type,props:this.props,field,value,event});
 	}
 	
 	selectChange = (selected,event) => {
@@ -277,11 +136,6 @@ class PMWorkflowStepContainer extends Component {
 				}
 			}
 		}
-	}
-	
-	goBack = () => {
-		fuLogger.log({level:'TRACE',loc:'WorkflowStepContainer::goBack',msg:"test"});
-		this.props.history.goBack();
 	}
 
 	render() {
